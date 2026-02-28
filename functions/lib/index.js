@@ -251,6 +251,7 @@ exports.generateTaskPlan = (0, https_1.onCall)({ secrets: [geminiApiKey] }, asyn
     const projectDescription = request.data?.projectDescription;
     const membersRaw = request.data?.members;
     const dueDate = request.data?.dueDate;
+    const projectId = request.data?.projectId;
     if (!projectDescription?.trim()) {
         throw new https_1.HttpsError("invalid-argument", "projectDescription is required.");
     }
@@ -327,6 +328,7 @@ JSON schema:
         const taskId = `task_${Date.now()}_${Math.random().toString(16).slice(2, 7)}`;
         await db.collection("tasks").doc(taskId).set({
             title: task.title,
+            projectId: projectId ?? null,
             assigneeId: task.assigneeId,
             dueDate: dueDate ?? new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
             estimateHours: task.estimateHours,
@@ -336,6 +338,7 @@ JSON schema:
         });
         await db.collection("events").doc(`canva_${task.assigneeId}_${taskId}`).set({
             memberId: task.assigneeId,
+            projectId: projectId ?? null,
             platform: "canva",
             type: "task_created",
             metadata: { taskId, generatedBy: "gemini" },
